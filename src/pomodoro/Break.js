@@ -4,6 +4,7 @@ import { minutesToDuration } from "../utils/duration";
 const Break = ({ 
   breakDuration,
   setBreakDuration,
+  isTimerRunning,
 }) => {
 
   return(
@@ -20,6 +21,7 @@ const Break = ({
                   type="button"
                   className="btn btn-secondary"
                   data-testid="decrease-break"
+                  disabled={isTimerRunning}
                   onClick={() => {
                     if (breakDuration > 1) {
                       setBreakDuration(breakDuration - 1);
@@ -33,6 +35,7 @@ const Break = ({
                   type="button"
                   className="btn btn-secondary"
                   data-testid="increase-break"
+                  disabled={isTimerRunning}
                   onClick={() => {
                     if (breakDuration < 15) {
                       setBreakDuration(breakDuration + 1);
