@@ -4,6 +4,7 @@ import React from "react";
 const Focus = ({ 
         focusDuration,
         setFocusDuration,
+        isTimerRunning,
     }) => { 
 
 
@@ -20,6 +21,7 @@ return (
         type="button"
         className="btn btn-secondary"
         data-testid="decrease-focus"
+        disabled={isTimerRunning}
         onClick={() => {
           if (focusDuration > 5) setFocusDuration(focusDuration - 5);
         }}
@@ -31,6 +33,7 @@ return (
         type="button"
         className="btn btn-secondary"
         data-testid="increase-focus"
+        disabled={isTimerRunning}
         onClick={() => {
           if (focusDuration < 60) setFocusDuration(focusDuration + 5);
         }}
