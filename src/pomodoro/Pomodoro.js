@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import classNames from "../utils/class-names";
 import useInterval from "../utils/useInterval";
-import { minutesToDuration } from "../utils/duration";
 import Focus from "./Focus";
 import Break from "./Break.js";
+import Session from "./Session";
 
 // These functions are defined outside of the component to insure they do not have access to state
 // and are, therefore more likely to be pure.
@@ -24,12 +24,13 @@ function nextTick(prevState) {
 }
 
 const formatTime = (time) => {
-  let minutes = Math.floor(time/60);
+  let minutes = Math.floor(time / 60);
   let seconds = time % 60;
 
-return (
-  (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-  (seconds < 10 ? "0" + seconds : seconds)
+  return (
+    (minutes < 10 ? "0" + minutes : minutes) +
+    ":" +
+    (seconds < 10 ? "0" + seconds : seconds)
   );
 };
 
@@ -71,7 +72,6 @@ function Pomodoro() {
   const [focusDuration, setFocusDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
 
-
   // Progress bar variables
   const [aria, setAria] = useState(0);
   const [breakRemaining, setBreakRemaining] = useState(0);
@@ -83,8 +83,8 @@ function Pomodoro() {
    */
 
   // Progress bar logic
-  useInterval(() => {
-
+  useInterval(
+    () => {
       setBreakRemaining(breakRemaining + 1);
       if (session.timeRemaining === 0) {
         new Audio("https://bigsoundbank.com/UPLOAD/mp3/1482.mp3").play();
@@ -131,52 +131,56 @@ function Pomodoro() {
     });
   }
 
+  function stopButton() {
+    if (session === "Focusing"){
+      return null;
+    }
+    if (session === "On Break"){
+      return null;
+    }
+    setSession(null);
+    setIsTimerRunning(false);
+    setElapsed(0);
+    setFocusDuration(25);
+    setBreakDuration(5);
+  }
 
-  // Session Label
-  function staticSess() {
-    if(session?.label === "Focusing") {
-      return `Focusing for ${minutesToDuration(focusDuration)} minutes`
-    } else if (session?.label === "On Break"){
-      return `On Break for ${minutesToDuration(breakDuration)} minutes`
-    } else {
-      return; 
-    } 
-  };
-
- 
-  return (
+    return (
+   
     <div className="pomodoro">
       <div className="row">
-        <Focus 
+        <Focus
           focusDuration={focusDuration}
           setFocusDuration={setFocusDuration}
-          />
+          isTimerRunning={isTimerRunning}
+        />
         <Break
           breakDuration={breakDuration}
           setBreakDuration={setBreakDuration}
-         />
-         </div>
-      
-    <div className="row">
-      <div className="col">
-        <div
-          className="btn-group btn-group-lg mb-2"
-          role="group"
-          aria-label="Timer controls"
-        >
-          <button
-            type="button"
-            className="btn btn-primary"
-            data-testid="play-pause"
-            title="Start or pause timer"
-            onClick={playPause}
+          isTimerRunning={isTimerRunning}
+        />
+      </div>
+
+      <div className="row">
+        <div className="col">
+          <div
+            className="btn-group btn-group-lg mb-2"
+            role="group"
+            aria-label="Timer controls"
           >
-            <span
-              className={classNames({
-                oi: true,
-                "oi-media-play": !isTimerRunning,
-                "oi-media-pause": isTimerRunning,
-              })}
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-testid="play-pause"
+              title="Start or pause timer"
+              onClick={playPause}
+            >
+              <span
+                className={classNames({
+                  oi: true,
+                  "oi-media-play": !isTimerRunning,
+                  "oi-media-pause": isTimerRunning,
+                })}
               />
             </button>
             {/* Stopping the current focus or break session. and disable the stop button when there is no active session */}
@@ -187,11 +191,7 @@ function Pomodoro() {
               data-testid="stop"
               title="Stop the session"
               disabled={!isTimerRunning}
-              onClick={() => {
-                setSession(null);
-                setIsTimerRunning(false);
-                setElapsed(0);
-              }}
+              onClick={stopButton}
             >
               <span className="oi oi-media-stop" />
             </button>
@@ -199,36 +199,27 @@ function Pomodoro() {
         </div>
       </div>
       <div>
-        {/* Shows only when there is an active focus or break - i.e. the session is running or is paused */}
-        {session && (
+      <Session
+          session={session}
+          breakDuration={breakDuration}
+          focusDuration={focusDuration}
+          isTimerRunning={isTimerRunning}
+          formatTime={formatTime}
+        />
           <div className="row mb-2">
-            <div className="col">
-              {/* Message below includes current session (Focusing or On Break) total duration */}
-              <h2 data-testid="session-title">
-                {staticSess()}
-              </h2>
-              {/* Message below correctly formats the time remaining in the current session */}
-              <p className="lead" data-testid="session-sub-title">
-                {session && formatTime(session.timeRemaining)} remaining
-              </p>
-              <h2 style={{display: `${isTimerRunning ? "none" : "block" }`}}>PAUSED</h2>
-            </div> 
-          </div>
-        )}
-          <div className="row mb-2">
-            <div className="col">
-              <div className="progress" style={{ height: "20px" }}>
-                <div
-                  className="progress-bar"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  aria-valuenow={aria} // Increase of aria-valuenow as elapsed time increases
-                  style={{ width: `${aria}%` }} // Increase width % as elapsed time increases
-                />
-              </div>
+          <div className="col">
+            <div className="progress" style={{ height: "20px" }}>
+              <div
+                className="progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={aria} // Increase of aria-valuenow as elapsed time increases
+                style={{ width: `${aria}%` }} // Increase width % as elapsed time increases
+              />
             </div>
           </div>
+        </div>
       </div>
     </div>
   );
